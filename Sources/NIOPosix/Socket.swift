@@ -16,7 +16,15 @@ import CNIOLinux
 import NIOCore
 
 /// The container used for writing multiple buffers via `writev`.
+#if os(Windows)
+struct iovec {
+    var iov_base: UnsafeMutableRawPointer?
+    var iov_len: Int
+}
 typealias IOVector = iovec
+#else
+typealias IOVector = iovec
+#endif
 
 // TODO: scattering support
 class Socket: BaseSocket, SocketProtocol {

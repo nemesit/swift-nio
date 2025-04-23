@@ -32,8 +32,18 @@ import Darwin
 @preconcurrency import Android
 #elseif canImport(WASILibc)
 @preconcurrency import WASILibc
+#elseif os(Windows)
+@preconcurrency import ucrt
 #else
 #error("Unknown C library.")
+#endif
+
+
+#if os(Windows)
+@_silgen_name("_errno") func _errno() -> UnsafeMutablePointer<Int32>
+var errno: Int32 { _errno().pointee }
+
+let EINTR: Int32 = 4
 #endif
 
 private func printError(_ string: StaticString) {
@@ -41,7 +51,7 @@ private func printError(_ string: StaticString) {
         var buf = buf
         while buf.count > 0 {
             // 2 is stderr
-            let rc = write(2, buf.baseAddress, buf.count)
+            let rc = write(2, buf.baseAddress, numericCast(buf.count))
             if rc < 0 {
                 let err = errno
                 if err == EINTR { continue }
